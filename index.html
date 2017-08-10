@@ -1,0 +1,524 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/html">
+
+<head>
+    <link rel="icon" type="image/png" href="css/images/map.ico" />
+    <title>Crime Intensity Map</title>
+    <link rel="stylesheet" href="css/leaflet.css" />
+    <link rel="stylesheet" href="css/jquery-ui.css" />
+    <script type="text/javascript" src="js/leaflet.js"></script>
+    <script type="text/javascript" src="js/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="js/jquery-ui.js"></script>
+
+    <script src="http://maps.google.com/maps/api/js?v=3&sensor=false"></script>
+    <script type="text/javascript" src="js/Google.js"></script>
+
+    <style type="text/css">
+        html {
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            font-family: arial, sans-serif;
+            padding: 0;
+            margin: 0;
+            font-size: .78em;
+            -webkit-font-smoothing: antialiased;
+            font-smoothing: antialiased;
+            color: #444 !important;
+        }
+
+        #map {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .legend {
+            line-height: 18px;
+            /*color: #444;*/
+        }
+
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: .7;
+        }
+
+        .toc {
+            line-height: 18px;
+            /*color: #333;*/
+            width: 180px;
+        }
+
+        .info {
+            padding: 6px 8px;
+            background: none repeat scroll 0 0 #FFFFFF;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+
+        .leaflet-top,
+        .leaflet-bottom {
+            z-index: 100;
+        }
+
+        .leaflet-control-layers {
+            width: 180px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div id="map"></div>
+
+
+    <script type="text/javascript">
+        var mapbox_access_token = "pk.eyJ1IjoibWVwYTEzNjMiLCJhIjoiUVdOOEpQOCJ9.2TwSXbKOCmBgV9L3w1HLpg"
+
+        var cartoLight = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
+            detectRetina: true,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attribution">CARTO</a>',
+            zIndex: 0
+        })
+
+        var arson = L.tileLayer('https://api.mapbox.com/v4/mepa1363.a5xfaukc/{z}/{x}/{y}.png?access_token=' + mapbox_access_token, {
+            attribution: 'Crime Data &copy; Calgary Police Service 2013.',
+            detectRetina: true,
+            zIndex: 10
+        });
+
+
+        var assault = L.tileLayer('https://api.mapbox.com/v4/mepa1363.12yz6fyb/{z}/{x}/{y}.png?access_token=' + mapbox_access_token, {
+            attribution: 'Crime Data &copy; Calgary Police Service 2013.',
+            detectRetina: true,
+            zIndex: 10
+        });
+
+        var comm_breakin = L.tileLayer('https://api.mapbox.com/v4/mepa1363.34sjq77p/{z}/{x}/{y}.png?access_token=' + mapbox_access_token, {
+            attribution: 'Crime Data &copy; Calgary Police Service 2013.',
+            detectRetina: true,
+            zIndex: 10
+        });
+
+        var homicide = L.tileLayer('https://api.mapbox.com/v4/mepa1363.5gdo9b18/{z}/{x}/{y}.png?access_token=' + mapbox_access_token, {
+            attribution: 'Crime Data &copy; Calgary Police Service 2013.',
+            detectRetina: true,
+            zIndex: 10
+        });
+
+        var res_breakin = L.tileLayer('https://api.mapbox.com/v4/mepa1363.1qny236w/{z}/{x}/{y}.png?access_token=' + mapbox_access_token, {
+            attribution: 'Crime Data &copy; Calgary Police Service 2013.',
+            detectRetina: true,
+            zIndex: 10
+        });
+
+        var robbery = L.tileLayer('https://api.mapbox.com/v4/mepa1363.4gcke1a9/{z}/{x}/{y}.png?access_token=' + mapbox_access_token, {
+            attribution: 'Crime Data &copy; Calgary Police Service 2013.',
+            detectRetina: true,
+            zIndex: 10
+        });
+
+        var sex_offence = L.tileLayer('https://api.mapbox.com/v4/mepa1363.d2mu6olj/{z}/{x}/{y}.png?access_token=' + mapbox_access_token, {
+            attribution: 'Crime Data &copy; Calgary Police Service 2013.',
+            detectRetina: true,
+            zIndex: 10
+        });
+
+        var theft = L.tileLayer('https://api.mapbox.com/v4/mepa1363.d5mxwz2i/{z}/{x}/{y}.png?access_token=' + mapbox_access_token, {
+            attribution: 'Crime Data &copy; Calgary Police Service 2013.',
+            detectRetina: true,
+            zIndex: 10
+        });
+
+        var theft_from_vehicle = L.tileLayer('https://api.mapbox.com/v4/mepa1363.b8gzy9sc/{z}/{x}/{y}.png?access_token=' + mapbox_access_token, {
+            attribution: 'Crime Data &copy; Calgary Police Service 2013.',
+            detectRetina: true,
+            zIndex: 10
+        });
+
+        var vandalism = L.tileLayer('https://api.mapbox.com/v4/mepa1363.6x9fphol/{z}/{x}/{y}.png?access_token=' + mapbox_access_token, {
+            attribution: 'Crime Data &copy; Calgary Police Service 2013.',
+            detectRetina: true,
+            zIndex: 10
+        });
+
+        var vehicle_theft = L.tileLayer('https://api.mapbox.com/v4/mepa1363.btx5e71c/{z}/{x}/{y}.png?access_token=' + mapbox_access_token, {
+            attribution: 'Crime Data &copy; Calgary Police Service 2013.',
+            detectRetina: true,
+            zIndex: 10
+        });
+
+        var styles = [{
+            "featureType": "water",
+            "elementType": "geometry",
+            "stylers": [{
+                "color": "#000000"
+            }, {
+                "lightness": 17
+            }]
+        }, {
+            "featureType": "landscape",
+            "elementType": "geometry",
+            "stylers": [{
+                "color": "#000000"
+            }, {
+                "lightness": 20
+            }]
+        }, {
+            "featureType": "road.highway",
+            "elementType": "geometry.fill",
+            "stylers": [{
+                "color": "#000000"
+            }, {
+                "lightness": 17
+            }]
+        }, {
+            "featureType": "road.highway",
+            "elementType": "geometry.stroke",
+            "stylers": [{
+                "color": "#000000"
+            }, {
+                "lightness": 29
+            }, {
+                "weight": 0.2
+            }]
+        }, {
+            "featureType": "road.arterial",
+            "elementType": "geometry",
+            "stylers": [{
+                "color": "#000000"
+            }, {
+                "lightness": 18
+            }]
+        }, {
+            "featureType": "road.local",
+            "elementType": "geometry",
+            "stylers": [{
+                "color": "#000000"
+            }, {
+                "lightness": 16
+            }]
+        }, {
+            "featureType": "poi",
+            "elementType": "geometry",
+            "stylers": [{
+                "color": "#000000"
+            }, {
+                "lightness": 21
+            }]
+        }, {
+            "elementType": "labels.text.stroke",
+            "stylers": [{
+                "visibility": "on"
+            }, {
+                "color": "#000000"
+            }, {
+                "lightness": 16
+            }]
+        }, {
+            "elementType": "labels.text.fill",
+            "stylers": [{
+                "saturation": 36
+            }, {
+                "color": "#000000"
+            }, {
+                "lightness": 40
+            }]
+        }, {
+            "elementType": "labels.icon",
+            "stylers": [{
+                "visibility": "off"
+            }]
+        }, {
+            "featureType": "transit",
+            "elementType": "geometry",
+            "stylers": [{
+                "color": "#000000"
+            }, {
+                "lightness": 19
+            }]
+        }, {
+            "featureType": "administrative",
+            "elementType": "geometry.fill",
+            "stylers": [{
+                "color": "#000000"
+            }, {
+                "lightness": 20
+            }]
+        }, {
+            "featureType": "administrative",
+            "elementType": "geometry.stroke",
+            "stylers": [{
+                "color": "#000000"
+            }, {
+                "lightness": 17
+            }, {
+                "weight": 1.2
+            }]
+        }];
+
+        var google_maps = new L.Google('ROADMAP', {
+            mapOptions: {
+                styles: styles
+            }
+        });
+
+        var map = L.map('map', {
+            center: [51.057, -114.066],
+            zoom: 12,
+            minZoom: 9,
+            maxZoom: 18,
+            layers: [cartoLight]
+        });
+
+        var base_layers = {
+            "Google Maps": google_maps,
+            "OpenStreetMap": cartoLight
+
+        };
+
+        L.control.layers(base_layers, {}, {
+            collapsed: false
+        }).addTo(map);
+
+        L.control.scale().addTo(map);
+
+        var legend = L.control({
+            position: 'bottomright'
+        });
+        legend.onAdd = function(map) {
+            var div = L.DomUtil.create('div', 'info legend');
+
+            div.innerHTML = '<p>Crime Intensity</p>';
+            div.innerHTML += '<div><i style="background: #feebe2"></i> 0 - 10</div>';
+            div.innerHTML += '<div><i style="background: #fcc5c0"></i> 10 - 20</div>';
+            div.innerHTML += '<div><i style="background: #fa9fb5"></i> 20 - 50</div>';
+            div.innerHTML += '<div><i style="background: #f768a1"></i> 50 - 100</div>';
+            div.innerHTML += '<div><i style="background: #dd3497"></i> 100 - 200</div>';
+            div.innerHTML += '<div><i style="background: #ae017e"></i> 200 - 500</div>';
+            div.innerHTML += '<div><i style="background: #7a0177"></i> > 500</div>';
+            return div;
+        };
+
+
+        legend.addTo(map);
+
+
+        var toc_panel = L.control({
+            position: 'topright'
+        });
+        toc_panel.onAdd = function(map) {
+            var div = L.DomUtil.create('div', 'info toc');
+            div.innerHTML = '<input type="radio" id="crime_overlay" name="crime_overlay" value="arson"/>Arson<br/>';
+            div.innerHTML += '<input type="radio" id="crime_overlay" name="crime_overlay" value="assault"/>Assault<br/>';
+            div.innerHTML += '<input type="radio" id="crime_overlay" name="crime_overlay" value="commercial_breakin"/>Commercial Break-in<br/>';
+            div.innerHTML += '<input type="radio" id="crime_overlay" name="crime_overlay" value="homicide"/>Homicide<br/>';
+            div.innerHTML += '<input type="radio" id="crime_overlay" name="crime_overlay" value="residential_breakin"/>Residential Break-in<br/>';
+            div.innerHTML += '<input type="radio" id="crime_overlay" name="crime_overlay" value="robbery"/>Robbery<br/>';
+            div.innerHTML += '<input type="radio" id="crime_overlay" name="crime_overlay" value="sex_offence"/>Sex Offence<br/>';
+            div.innerHTML += '<input type="radio" id="crime_overlay" name="crime_overlay" value="theft"/>Theft<br/>';
+            div.innerHTML += '<input type="radio" id="crime_overlay" name="crime_overlay" value="theft_from_vehicle"/>Theft from Vehicle<br/>';
+            div.innerHTML += '<input type="radio" id="crime_overlay" name="crime_overlay" value="vandalism"/>Vandalism<br/>';
+            div.innerHTML += '<input type="radio" id="crime_overlay" name="crime_overlay" value="vehicle_theft"/>Vehicle Theft';
+            div.innerHTML += '<hr><b>Hint</b>: turn on information that you want to see by <b>clicking</b> on items listed <b>above</b>.';
+
+            return div;
+        };
+
+        //overlay table of content panel
+        toc_panel.addTo(map);
+
+        $('.toc input:radio').change(function() {
+
+            switch ($(this).val()) {
+                case 'arson':
+                    map.removeLayer(assault);
+                    map.removeLayer(comm_breakin);
+                    map.removeLayer(homicide);
+                    map.removeLayer(res_breakin);
+                    map.removeLayer(robbery);
+                    map.removeLayer(sex_offence);
+                    map.removeLayer(theft);
+                    map.removeLayer(theft_from_vehicle);
+                    map.removeLayer(vandalism);
+                    map.removeLayer(vehicle_theft);
+
+                    map.addLayer(arson);
+                    break;
+                case 'assault':
+                    map.removeLayer(arson);
+                    map.removeLayer(comm_breakin);
+                    map.removeLayer(homicide);
+                    map.removeLayer(res_breakin);
+                    map.removeLayer(robbery);
+                    map.removeLayer(sex_offence);
+                    map.removeLayer(theft);
+                    map.removeLayer(theft_from_vehicle);
+                    map.removeLayer(vandalism);
+                    map.removeLayer(vehicle_theft);
+
+                    map.addLayer(assault);
+                    break;
+                case 'commercial_breakin':
+                    map.removeLayer(arson);
+                    map.removeLayer(assault);
+                    map.removeLayer(homicide);
+                    map.removeLayer(res_breakin);
+                    map.removeLayer(robbery);
+                    map.removeLayer(sex_offence);
+                    map.removeLayer(theft);
+                    map.removeLayer(theft_from_vehicle);
+                    map.removeLayer(vandalism);
+                    map.removeLayer(vehicle_theft);
+
+                    map.addLayer(comm_breakin);
+                    break;
+                case 'homicide':
+                    map.removeLayer(arson);
+                    map.removeLayer(assault);
+                    map.removeLayer(comm_breakin);
+                    map.removeLayer(res_breakin);
+                    map.removeLayer(robbery);
+                    map.removeLayer(sex_offence);
+                    map.removeLayer(theft);
+                    map.removeLayer(theft_from_vehicle);
+                    map.removeLayer(vandalism);
+                    map.removeLayer(vehicle_theft);
+
+                    map.addLayer(homicide);
+                    break;
+                case 'residential_breakin':
+                    map.removeLayer(arson);
+                    map.removeLayer(assault);
+                    map.removeLayer(comm_breakin);
+                    map.removeLayer(homicide);
+                    map.removeLayer(robbery);
+                    map.removeLayer(sex_offence);
+                    map.removeLayer(theft);
+                    map.removeLayer(theft_from_vehicle);
+                    map.removeLayer(vandalism);
+                    map.removeLayer(vehicle_theft);
+
+                    map.addLayer(res_breakin);
+                    break;
+                case 'robbery':
+                    map.removeLayer(arson);
+                    map.removeLayer(assault);
+                    map.removeLayer(comm_breakin);
+                    map.removeLayer(homicide);
+                    map.removeLayer(res_breakin);
+                    map.removeLayer(sex_offence);
+                    map.removeLayer(theft);
+                    map.removeLayer(theft_from_vehicle);
+                    map.removeLayer(vandalism);
+                    map.removeLayer(vehicle_theft);
+
+                    map.addLayer(robbery);
+                    break;
+                case 'sex_offence':
+                    map.removeLayer(arson);
+                    map.removeLayer(assault);
+                    map.removeLayer(comm_breakin);
+                    map.removeLayer(homicide);
+                    map.removeLayer(res_breakin);
+                    map.removeLayer(robbery);
+                    map.removeLayer(theft);
+                    map.removeLayer(theft_from_vehicle);
+                    map.removeLayer(vandalism);
+                    map.removeLayer(vehicle_theft);
+
+                    map.addLayer(sex_offence);
+                    break;
+                case 'theft':
+                    map.removeLayer(arson);
+                    map.removeLayer(assault);
+                    map.removeLayer(comm_breakin);
+                    map.removeLayer(homicide);
+                    map.removeLayer(res_breakin);
+                    map.removeLayer(robbery);
+                    map.removeLayer(sex_offence);
+                    map.removeLayer(theft_from_vehicle);
+                    map.removeLayer(vandalism);
+                    map.removeLayer(vehicle_theft);
+
+                    map.addLayer(theft);
+                    break;
+                case 'theft_from_vehicle':
+                    map.removeLayer(arson);
+                    map.removeLayer(assault);
+                    map.removeLayer(comm_breakin);
+                    map.removeLayer(homicide);
+                    map.removeLayer(res_breakin);
+                    map.removeLayer(robbery);
+                    map.removeLayer(sex_offence);
+                    map.removeLayer(theft);
+                    map.removeLayer(vandalism);
+                    map.removeLayer(vehicle_theft);
+
+                    map.addLayer(theft_from_vehicle);
+                    break;
+                case 'vandalism':
+                    map.removeLayer(arson);
+                    map.removeLayer(assault);
+                    map.removeLayer(comm_breakin);
+                    map.removeLayer(homicide);
+                    map.removeLayer(res_breakin);
+                    map.removeLayer(robbery);
+                    map.removeLayer(sex_offence);
+                    map.removeLayer(theft);
+                    map.removeLayer(theft_from_vehicle);
+                    map.removeLayer(vehicle_theft);
+
+                    map.addLayer(vandalism);
+                    break;
+                case 'vehicle_theft':
+                    map.removeLayer(arson);
+                    map.removeLayer(assault);
+                    map.removeLayer(comm_breakin);
+                    map.removeLayer(homicide);
+                    map.removeLayer(res_breakin);
+                    map.removeLayer(robbery);
+                    map.removeLayer(sex_offence);
+                    map.removeLayer(theft);
+                    map.removeLayer(theft_from_vehicle);
+                    map.removeLayer(vandalism);
+
+                    map.addLayer(vehicle_theft);
+                    break;
+            }
+        });
+
+        $(function() {
+            $("#about-dialog").dialog({
+                height: "auto",
+                width: 500,
+                modal: true,
+                draggable: false,
+                resizable: false
+            });
+        });
+    </script>
+    <div id="about-dialog" title="Crime Intensity Map" style="display:none;">
+        <p style="font-size: 14px; text-align: justify; line-height: 120%;">
+
+            We developed a simple crime mapping application that could be used to support community policing. It presents crime intensity within the City of Calgary. Incidences have been categorised by the Calgary Police, and the data were downloaded from the Calgary
+            Police Website between November 2012 and February 2013. For the population data, we used 2011 Statistics Canada census data.
+
+            <div style="float: left; margin-top: 15px;"><a href="http://gisciencegroup.ucalgary.ca/" target="_blank"><img
+            src="css/images/wiki.png" height="50" alt="GIScience Group" border="0"/></a></div>
+            <div style="float: right"><a href="http://ucalgary.ca/" target="_blank"><img src="css/images/uofc.png" height="70"
+                                                                                 alt="University of Calgary"
+                                                                                 border="0"/></a></div>
+
+    </div>
+</body>
+
+</html>
